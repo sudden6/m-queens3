@@ -20,7 +20,5 @@
  ****************************************************************************/
 #include "symmetry.hpp"
 
-char const *const  queens::Symmetry::NAMES[] = {
-  "<INVALID>", "ROTATE", "POINT", "NONE"
-};
+char const *const queens::Symmetry::NAMES[] = {"<INVALID>", "ROTATE", "POINT", "NONE"};
 queens::Symmetry::range_t queens::Symmetry::RANGE;
