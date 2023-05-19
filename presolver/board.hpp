@@ -39,11 +39,18 @@ class Board {
         uint64_t bd;
 
     public:
-        Board(unsigned const dim) : N(dim), board(new signed[dim]), bv(0), bh(0), bu(0), bd(0) {
-            for (unsigned i = 0; i < dim; board[i++] = -1)
-                ;
+        Board(unsigned const dim) : N(dim), board(new signed[N]), bv(0), bh(0), bu(0), bd(0) {
+            for (unsigned i = 0; i < N; i++) {
+                board[i] = -1;
+            }
         }
         ~Board() { delete[] board; }
+        Board(Board const &other)
+            : N(other.N), board(new signed[N]), bv(other.bv), bh(other.bh), bu(other.bu), bd(other.bd) {
+            for (unsigned i = 0; i < N; i++) {
+                board[i] = other.board[i];
+            }
+        }
 
     private:
         class Cell {
@@ -174,7 +181,7 @@ class Board {
 
 }; // class Board
 
-std::ostream &operator<<(std::ostream &out, Board const &brd) {
+inline std::ostream &operator<<(std::ostream &out, Board const &brd) {
     unsigned const N = brd.N;
     for (unsigned y = N; y-- > 0;) {
         for (unsigned x = 0; x < N; x++) {
@@ -185,7 +192,7 @@ std::ostream &operator<<(std::ostream &out, Board const &brd) {
     return out;
 }
 
-std::ostream &operator<<(std::ostream &out, Board::Placement const &p) {
+inline std::ostream &operator<<(std::ostream &out, Board::Placement const &p) {
     out << '(' << p.x << ',' << p.y << ')';
     return out;
 }
