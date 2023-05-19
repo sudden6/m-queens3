@@ -35,100 +35,8 @@
 
 using namespace queens;
 
-namespace {
-
-class Explorer {
-        uint64_t pre[3];
-        uint64_t *const cnt;
-
-    public:
-        Explorer(bool const &full) : cnt(full ? new uint64_t[3] : 0) {
-            for (Symmetry s : ALL_SYMMETRIES) {
-                unsigned const sym_idx = s;
-                pre[sym_idx] = 0;
-                if (cnt) {
-                    cnt[sym_idx] = 0;
-                }
-            }
-        }
-        ~Explorer() {}
-
-    public:
-        void process(Board const &brd, Symmetry sym) {
-            unsigned const sym_idx = sym;
-            pre[sym_idx]++;
-            if (cnt) {
-                unsigned const N = brd.N;
-                cnt[sym_idx] += countCompletions(brd.getBV() >> 2,
-                                                 ((((brd.getBH() >> 2) | (~0 << (N - 4))) + 1) << (brd.N - 5)) - 1,
-                                                 brd.getBU() >> 4, (brd.getBD() >> 4) << (N - 5));
-            }
-        } // process()
-
-        void dump(std::ostream &out) const {
-            uint64_t total_pre;
-            uint64_t total_cnt;
-
-            out << "Symmetry     Seeds";
-            total_pre = 0;
-            if (cnt) {
-                out << "          Boards";
-                total_cnt = 0;
-            }
-            out << "\n-----\n";
-
-            for (Symmetry s : ALL_SYMMETRIES) {
-                unsigned const sym_idx = s;
-                out << (char const *)s << '\t' << std::right << std::setw(10) << pre[s];
-                total_pre += pre[sym_idx];
-                if (cnt) {
-                    unsigned const w = s.weight();
-                    out << '\t' << std::right << std::setw(10) << cnt[sym_idx] << '*' << w;
-                    total_cnt += w * cnt[sym_idx];
-                }
-                out << '\n';
-            }
-            out << "-----\nTOTAL\t" << std::right << std::setw(10) << total_pre;
-            if (cnt)
-                out << '\t' << std::right << std::setw(12) << total_cnt;
-            out << '\n';
-        }
-
-    private:
-        static uint64_t countCompletions(uint64_t bv, uint64_t bh, uint64_t bu, uint64_t bd) {
-            // Placement Complete?
-            if (bh + 1 == 0)
-                return 1;
-
-            // -> at least one more queen to place
-            while ((bv & 1) != 0) { // Column is covered by pre-placement
-                bv >>= 1;
-                bu <<= 1;
-                bd >>= 1;
-            }
-            bv >>= 1;
-
-            // Column needs to be placed
-            uint64_t cnt = 0;
-            for (uint64_t slots = ~(bh | bu | bd); slots != 0;) {
-                uint64_t const slot = slots & -slots;
-                cnt += countCompletions(bv, bh | slot, (bu | slot) << 1, (bd | slot) >> 1);
-                slots ^= slot;
-            }
-            return cnt;
-
-        } // countCompletions()
-};
-
-std::ostream &operator<<(std::ostream &out, Explorer const &act) {
-    act.dump(out);
-    return out;
-}
-} // namespace
-
-Preplacements preplace(unsigned N, bool count_solutions) {
-    std::cout << N << "-Queens Puzzle\n" << std::endl;
-    Explorer action{count_solutions};
+Preplacements preplace(unsigned N) {
+    std::cout << N << "-Queens Puzzle preplacement generator\n" << std::endl;
 
     Preplacements res{};
 
@@ -259,7 +167,6 @@ Preplacements preplace(unsigned N, bool count_solutions) {
                             continue;
                         }
                         res[Symmetry(Symmetry::Direction::ROTATE)].push_back(board);
-                        action.process(board, Symmetry::Direction::ROTATE);
                         continue;
                     }
                     if (e == w) {
@@ -270,7 +177,6 @@ Preplacements preplace(unsigned N, bool count_solutions) {
                                 continue;
                             }
                             res[Symmetry(Symmetry::Direction::POINT)].push_back(board);
-                            action.process(board, Symmetry::Direction::POINT);
                             continue;
                         }
                     }
@@ -278,13 +184,11 @@ Preplacements preplace(unsigned N, bool count_solutions) {
 
                     // print('o', wa, wb, na, nb, ea, eb, sa, sb);
                     res[Symmetry(Symmetry::Direction::NONE)].push_back(board);
-                    action.process(board, Symmetry::Direction::NONE);
-
                 } // s
             }     // e
         }         // n
     }             // w
 
-    std::cout << "\n\n" << action << std::endl;
+    std::cout << std::endl;
     return res;
 }
