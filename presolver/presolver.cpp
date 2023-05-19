@@ -1,10 +1,11 @@
 #include "cxxopts.hpp"
+#include <chrono>
 #include <cstdint>
 #include <iostream>
 #include <string>
 
-// HACK: Need to write a header file
-void preplace(unsigned N, bool count_solutions);
+#include "coronal2.hpp"
+#include "symmetry.hpp"
 
 int main(int argc, char *argv[]) {
     cxxopts::Options options("m-queens3-presolver", "This program generates work units for the m-queens3 solver");
@@ -35,7 +36,25 @@ int main(int argc, char *argv[]) {
 
     std::cout << "Running with boardsize: " << std::to_string(boardsize) << std::endl;
 
-    preplace(boardsize, true);
+    auto time_start = std::chrono::high_resolution_clock::now();
+
+    auto preplacements = preplace(boardsize, true);
+
+    auto time_end = std::chrono::high_resolution_clock::now();
+    std::chrono::duration<double> elapsed = time_end - time_start;
+
+    std::cout << "Time " << std::to_string(elapsed.count()) << " seconds" << std::endl;
+
+    std::cout << "Preplaced boards:" << std::endl;
+    size_t const none = preplacements[queens::Symmetry(queens::Symmetry::Direction::NONE)].size();
+    size_t const point = preplacements[queens::Symmetry(queens::Symmetry::Direction::POINT)].size();
+    size_t const rotate = preplacements[queens::Symmetry(queens::Symmetry::Direction::ROTATE)].size();
+
+    std::cout << "NONE  : " << std::to_string(none) << std::endl;
+    std::cout << "POINT : " << std::to_string(point) << std::endl;
+    std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
+    std::cout << "------" << std::endl;
+    std::cout << "TOTAL : " << std::to_string(none + point + rotate) << std::endl;
 
     return 0;
 }

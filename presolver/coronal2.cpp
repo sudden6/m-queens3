@@ -28,10 +28,9 @@
 #include <iomanip>
 #include <iostream>
 #include <memory>
-
 #include <string.h>
 
-#include "board.hpp"
+#include "coronal2.hpp"
 #include "symmetry.hpp"
 
 using namespace queens;
@@ -39,11 +38,11 @@ using namespace queens;
 namespace {
 
 class Explorer {
-        uint64_t pre[4];
+        uint64_t pre[3];
         uint64_t *const cnt;
 
     public:
-        Explorer(bool const &full) : cnt(full ? new uint64_t[4] : 0) {
+        Explorer(bool const &full) : cnt(full ? new uint64_t[3] : 0) {
             for (Symmetry s : ALL_SYMMETRIES) {
                 unsigned const sym_idx = s;
                 pre[sym_idx] = 0;
@@ -127,14 +126,11 @@ std::ostream &operator<<(std::ostream &out, Explorer const &act) {
 }
 } // namespace
 
-/**
- * @brief Run preplacer from q27 project
- * @param N boardsize
- * @param count_solutions if true evaluate and count all computed preplacements
- */
-void preplace(unsigned N, bool count_solutions) {
+Preplacements preplace(unsigned N, bool count_solutions) {
     std::cout << N << "-Queens Puzzle\n" << std::endl;
     Explorer action{count_solutions};
+
+    Preplacements res{};
 
     /**
      * The number of valid pre-placements in two adjacent columns (rows) is
@@ -262,7 +258,8 @@ void preplace(unsigned N, bool count_solutions) {
                             // print('s', wa, wb, na, nb, ea, eb, sa, sb);
                             continue;
                         }
-                        action.process(board, Symmetry::ROTATE);
+                        res[Symmetry(Symmetry::Direction::ROTATE)].push_back(board);
+                        action.process(board, Symmetry::Direction::ROTATE);
                         continue;
                     }
                     if (e == w) {
@@ -272,14 +269,16 @@ void preplace(unsigned N, bool count_solutions) {
                                 // print('e', wa, wb, na, nb, ea, eb, sa, sb);
                                 continue;
                             }
-                            action.process(board, Symmetry::POINT);
+                            res[Symmetry(Symmetry::Direction::POINT)].push_back(board);
+                            action.process(board, Symmetry::Direction::POINT);
                             continue;
                         }
                     }
                     // n = w is okay
 
                     // print('o', wa, wb, na, nb, ea, eb, sa, sb);
-                    action.process(board, Symmetry::NONE);
+                    res[Symmetry(Symmetry::Direction::NONE)].push_back(board);
+                    action.process(board, Symmetry::Direction::NONE);
 
                 } // s
             }     // e
@@ -287,4 +286,5 @@ void preplace(unsigned N, bool count_solutions) {
     }             // w
 
     std::cout << "\n\n" << action << std::endl;
+    return res;
 }
