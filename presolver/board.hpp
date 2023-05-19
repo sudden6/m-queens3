@@ -18,8 +18,7 @@
  * You should have received a copy of the GNU Affero General Public License
  * along with this program.  If not, see <http://www.gnu.org/licenses/>.
  ****************************************************************************/
-#ifndef _QUEENS_BOARD_HPP
-#define _QUEENS_BOARD_HPP
+#pragma once
 
 #include <cstdint>
 #include <iostream>
@@ -192,5 +191,3 @@ std::ostream &operator<<(std::ostream &out, Board::Placement const &p) {
 }
 
 } // namespace queens
-
-#endif

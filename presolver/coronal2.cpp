@@ -38,23 +38,7 @@ using namespace queens;
 
 namespace {
 
-class Action {
-    protected:
-        Action() {}
-
-    public:
-        virtual ~Action() {}
-
-    public:
-        void operator()(Board const &brd, Symmetry sym) { this->process(brd, sym); }
-
-    protected:
-        virtual void process(Board const &brd, Symmetry sym) = 0;
-        virtual void dump(std::ostream &out) const = 0;
-        friend std::ostream &operator<<(std::ostream &out, Action const &act);
-};
-
-class Explorer : public Action {
+class Explorer {
         uint64_t pre[4];
         uint64_t *const cnt;
 
@@ -70,7 +54,7 @@ class Explorer : public Action {
         }
         ~Explorer() {}
 
-    protected:
+    public:
         void process(Board const &brd, Symmetry sym) {
             unsigned const sym_idx = sym;
             pre[sym_idx]++;
@@ -137,7 +121,7 @@ class Explorer : public Action {
         } // countCompletions()
 };
 
-std::ostream &operator<<(std::ostream &out, Action const &act) {
+std::ostream &operator<<(std::ostream &out, Explorer const &act) {
     act.dump(out);
     return out;
 }
@@ -150,7 +134,7 @@ std::ostream &operator<<(std::ostream &out, Action const &act) {
  */
 void preplace(unsigned N, bool count_solutions) {
     std::cout << N << "-Queens Puzzle\n" << std::endl;
-    std::unique_ptr<Action> act(new Explorer(count_solutions));
+    Explorer action{count_solutions};
 
     /**
      * The number of valid pre-placements in two adjacent columns (rows) is
@@ -278,7 +262,7 @@ void preplace(unsigned N, bool count_solutions) {
                             // print('s', wa, wb, na, nb, ea, eb, sa, sb);
                             continue;
                         }
-                        (*act)(board, Symmetry::ROTATE);
+                        action.process(board, Symmetry::ROTATE);
                         continue;
                     }
                     if (e == w) {
@@ -288,19 +272,19 @@ void preplace(unsigned N, bool count_solutions) {
                                 // print('e', wa, wb, na, nb, ea, eb, sa, sb);
                                 continue;
                             }
-                            (*act)(board, Symmetry::POINT);
+                            action.process(board, Symmetry::POINT);
                             continue;
                         }
                     }
                     // n = w is okay
 
                     // print('o', wa, wb, na, nb, ea, eb, sa, sb);
-                    (*act)(board, Symmetry::NONE);
+                    action.process(board, Symmetry::NONE);
 
                 } // s
             }     // e
         }         // n
     }             // w
 
-    std::cout << "\n\n" << *act << std::endl;
+    std::cout << "\n\n" << action << std::endl;
 }
