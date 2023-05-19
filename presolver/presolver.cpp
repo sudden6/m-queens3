@@ -4,8 +4,40 @@
 #include <iostream>
 #include <string>
 
+#include "board.hpp"
 #include "coronal2.hpp"
+#include "cpu_solver_recursive.hpp"
 #include "symmetry.hpp"
+
+// expected results from https://oeis.org/A000170
+static constexpr uint64_t results[27] = {
+    1ULL,
+    0ULL,
+    0ULL,
+    2ULL,
+    10ULL,
+    4ULL,
+    40ULL,
+    92ULL,
+    352ULL,
+    724ULL,
+    2680ULL,
+    14200ULL,
+    73712ULL,
+    365596ULL,
+    2279184ULL,
+    14772512ULL,
+    95815104ULL,
+    666090624ULL,
+    4968057848ULL,
+    39029188884ULL,
+    314666222712ULL,
+    2691008701644ULL,
+    24233937684440ULL,
+    227514171973736ULL,
+    2207893435808352ULL,
+    22317699616364044ULL,
+    234907967154122528ULL};
 
 int main(int argc, char *argv[]) {
     cxxopts::Options options("m-queens3-presolver", "This program generates work units for the m-queens3 solver");
@@ -34,6 +66,7 @@ int main(int argc, char *argv[]) {
         return -1;
     }
 
+    // Compute preplacements
     std::cout << "Running with boardsize: " << std::to_string(boardsize) << std::endl;
 
     auto time_start = std::chrono::high_resolution_clock::now();
@@ -43,18 +76,57 @@ int main(int argc, char *argv[]) {
     auto time_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = time_end - time_start;
 
-    std::cout << "Time " << std::to_string(elapsed.count()) << " seconds" << std::endl;
+    { // Preplacement stats
+        std::cout << "Preplaced boards:" << std::endl;
+        size_t const none = preplacements[queens::Symmetry(queens::Symmetry::Direction::NONE)].size();
+        size_t const point = preplacements[queens::Symmetry(queens::Symmetry::Direction::POINT)].size();
+        size_t const rotate = preplacements[queens::Symmetry(queens::Symmetry::Direction::ROTATE)].size();
 
-    std::cout << "Preplaced boards:" << std::endl;
-    size_t const none = preplacements[queens::Symmetry(queens::Symmetry::Direction::NONE)].size();
-    size_t const point = preplacements[queens::Symmetry(queens::Symmetry::Direction::POINT)].size();
-    size_t const rotate = preplacements[queens::Symmetry(queens::Symmetry::Direction::ROTATE)].size();
+        std::cout << "NONE  : " << std::to_string(none) << std::endl;
+        std::cout << "POINT : " << std::to_string(point) << std::endl;
+        std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
+        std::cout << "------" << std::endl;
+        std::cout << "TOTAL : " << std::to_string(none + point + rotate) << std::endl;
+        std::cout << "Time " << std::to_string(elapsed.count()) << " seconds" << std::endl;
+    }
 
-    std::cout << "NONE  : " << std::to_string(none) << std::endl;
-    std::cout << "POINT : " << std::to_string(point) << std::endl;
-    std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
-    std::cout << "------" << std::endl;
-    std::cout << "TOTAL : " << std::to_string(none + point + rotate) << std::endl;
+    std::cout << std::endl;
+
+    // Solve preplacements
+
+    time_start = std::chrono::high_resolution_clock::now();
+
+    std::array<uint64_t, queens::ALL_SYMMETRIES.size()> counts{};
+
+    for (queens::Symmetry const &sym : queens::ALL_SYMMETRIES) {
+        for (queens::Board const &brd : preplacements[sym]) {
+            counts[sym] += queens::countCompletions(brd);
+        }
+    }
+
+    time_end = std::chrono::high_resolution_clock::now();
+    elapsed = time_end - time_start;
+
+    { // Solver stats
+        uint64_t const none = counts[queens::Symmetry(queens::Symmetry::Direction::NONE)] *
+                              queens::Symmetry(queens::Symmetry::Direction::NONE).weight();
+        uint64_t const point = counts[queens::Symmetry(queens::Symmetry::Direction::POINT)] *
+                               queens::Symmetry(queens::Symmetry::Direction::POINT).weight();
+        uint64_t const rotate = counts[queens::Symmetry(queens::Symmetry::Direction::ROTATE)] *
+                                queens::Symmetry(queens::Symmetry::Direction::ROTATE).weight();
+        uint64_t const total = none + point + rotate;
+
+        std::cout << "Solutions:" << std::endl;
+        std::cout << "NONE  : " << std::to_string(none) << std::endl;
+        std::cout << "POINT : " << std::to_string(point) << std::endl;
+        std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
+        std::cout << "------" << std::endl;
+        std::cout << "TOTAL : " << std::to_string(total) << std::endl;
+        std::cout << "Time " << std::to_string(elapsed.count()) << " seconds" << std::endl;
+
+        std::cout << (results[boardsize - 1] == total ? "PASS" : "FAIL") << std::endl;
+    }
+
 
     return 0;
 }
