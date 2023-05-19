@@ -6,26 +6,29 @@
 namespace queens {
 class Symmetry {
     private:
-        static constexpr std::array NAMES = {"<INVALID>", "ROTATE", "POINT", "NONE"};
+        static constexpr std::array NAMES = {"ROTATE", "POINT", "NONE"};
 
     public:
-        static constexpr unsigned NONE = 3;
-        static constexpr unsigned POINT = 2;
-        static constexpr unsigned ROTATE = 1;
+        enum class Direction {
+            NONE = 2,
+            POINT = 1,
+            ROTATE = 0,
+        };
 
     private:
-        unsigned m_val;
+        Direction m_val;
 
     public:
-        Symmetry(unsigned val) : m_val(val) { assert(val > 0 && val < 4); }
+        Symmetry(Direction val) : m_val{val} {};
         ~Symmetry() = default;
-        operator unsigned() const { return m_val; }
-        operator char const *() const { return NAMES[m_val]; }
+        operator unsigned() const { return static_cast<unsigned>(m_val); }
+        operator char const *() const { return NAMES[*this]; }
 
     public:
-        unsigned weight() const { return 1 << m_val; }
+        unsigned weight() const { return 1 << (static_cast<unsigned>(m_val) + 1); }
 };
 
-static const std::array<Symmetry, 3> ALL_SYMMETRIES{Symmetry{Symmetry::NONE}, Symmetry{Symmetry::POINT},
-                                                    Symmetry{Symmetry::ROTATE}};
+static const std::array<Symmetry, 3> ALL_SYMMETRIES{Symmetry{Symmetry::Direction::NONE},
+                                                    Symmetry{Symmetry::Direction::POINT},
+                                                                                                    Symmetry{Symmetry::Direction::ROTATE}};
 } // namespace queens
