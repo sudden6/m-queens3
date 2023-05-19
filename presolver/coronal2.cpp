@@ -20,7 +20,7 @@
  ****************************************************************************/
 // If TRACE is defined the search tree expansion is traced to std::cerr.
 // #undef TRACE
-#define TRACE
+//#define TRACE
 
 #include <cassert>
 #include <cstdint>
@@ -60,7 +60,7 @@ class Explorer : public Action {
 
     public:
         Explorer(bool const &full) : cnt(full ? new uint64_t[4] : 0) {
-            for (Symmetry s : Symmetry::RANGE) {
+            for (Symmetry s : ALL_SYMMETRIES) {
                 unsigned const sym_idx = s;
                 pre[sym_idx] = 0;
                 if (cnt) {
@@ -94,7 +94,7 @@ class Explorer : public Action {
             }
             out << "\n-----\n";
 
-            for (Symmetry s : Symmetry::RANGE) {
+            for (Symmetry s : ALL_SYMMETRIES) {
                 unsigned const sym_idx = s;
                 out << (char const *)s << '\t' << std::right << std::setw(10) << pre[s];
                 total_pre += pre[sym_idx];
