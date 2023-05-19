@@ -10,34 +10,33 @@
 #include "symmetry.hpp"
 
 // expected results from https://oeis.org/A000170
-static constexpr uint64_t results[27] = {
-    1ULL,
-    0ULL,
-    0ULL,
-    2ULL,
-    10ULL,
-    4ULL,
-    40ULL,
-    92ULL,
-    352ULL,
-    724ULL,
-    2680ULL,
-    14200ULL,
-    73712ULL,
-    365596ULL,
-    2279184ULL,
-    14772512ULL,
-    95815104ULL,
-    666090624ULL,
-    4968057848ULL,
-    39029188884ULL,
-    314666222712ULL,
-    2691008701644ULL,
-    24233937684440ULL,
-    227514171973736ULL,
-    2207893435808352ULL,
-    22317699616364044ULL,
-    234907967154122528ULL};
+static constexpr uint64_t results[27] = {1ULL,
+                                         0ULL,
+                                         0ULL,
+                                         2ULL,
+                                         10ULL,
+                                         4ULL,
+                                         40ULL,
+                                         92ULL,
+                                         352ULL,
+                                         724ULL,
+                                         2680ULL,
+                                         14200ULL,
+                                         73712ULL,
+                                         365596ULL,
+                                         2279184ULL,
+                                         14772512ULL,
+                                         95815104ULL,
+                                         666090624ULL,
+                                         4968057848ULL,
+                                         39029188884ULL,
+                                         314666222712ULL,
+                                         2691008701644ULL,
+                                         24233937684440ULL,
+                                         227514171973736ULL,
+                                         2207893435808352ULL,
+                                         22317699616364044ULL,
+                                         234907967154122528ULL};
 
 int main(int argc, char *argv[]) {
     cxxopts::Options options("m-queens3-presolver", "This program generates work units for the m-queens3 solver");
@@ -68,10 +67,11 @@ int main(int argc, char *argv[]) {
 
     // Compute preplacements
     std::cout << "Running with boardsize: " << std::to_string(boardsize) << std::endl;
+    std::cout.precision(3);
 
     auto time_start = std::chrono::high_resolution_clock::now();
 
-    auto preplacements = preplace(boardsize, true);
+    auto preplacements = preplace(boardsize);
 
     auto time_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = time_end - time_start;
@@ -81,13 +81,18 @@ int main(int argc, char *argv[]) {
         size_t const none = preplacements[queens::Symmetry(queens::Symmetry::Direction::NONE)].size();
         size_t const point = preplacements[queens::Symmetry(queens::Symmetry::Direction::POINT)].size();
         size_t const rotate = preplacements[queens::Symmetry(queens::Symmetry::Direction::ROTATE)].size();
+        size_t const total = none + point + rotate;
+
+        // Board object does dynamic memory allocation
+        size_t const board_obj_size = sizeof(queens::Board) + boardsize * sizeof(signed);
 
         std::cout << "NONE  : " << std::to_string(none) << std::endl;
         std::cout << "POINT : " << std::to_string(point) << std::endl;
         std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
         std::cout << "------" << std::endl;
-        std::cout << "TOTAL : " << std::to_string(none + point + rotate) << std::endl;
-        std::cout << "Time " << std::to_string(elapsed.count()) << " seconds" << std::endl;
+        std::cout << "TOTAL : " << std::to_string(total) << std::endl;
+        std::cout << "Memory: " << std::to_string(total*board_obj_size) << std::endl;
+        std::cout << "Time  : " << elapsed.count() << " seconds" << std::endl;
     }
 
     std::cout << std::endl;
@@ -99,9 +104,12 @@ int main(int argc, char *argv[]) {
     std::array<uint64_t, queens::ALL_SYMMETRIES.size()> counts{};
 
     for (queens::Symmetry const &sym : queens::ALL_SYMMETRIES) {
+        uint64_t l_counts = 0;
+        #pragma omp parallel for reduction(+ : l_counts) schedule(dynamic)
         for (queens::Board const &brd : preplacements[sym]) {
-            counts[sym] += queens::countCompletions(brd);
+            l_counts += queens::countCompletions(brd);
         }
+        counts[sym] = l_counts;
     }
 
     time_end = std::chrono::high_resolution_clock::now();
@@ -122,11 +130,11 @@ int main(int argc, char *argv[]) {
         std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
         std::cout << "------" << std::endl;
         std::cout << "TOTAL : " << std::to_string(total) << std::endl;
-        std::cout << "Time " << std::to_string(elapsed.count()) << " seconds" << std::endl;
+        std::cout << "Time  : " << elapsed.count() << " seconds, ";
+        std::cout << "Solutions/s " << total/elapsed.count() << std::endl;
 
         std::cout << (results[boardsize - 1] == total ? "PASS" : "FAIL") << std::endl;
     }
-
 
     return 0;
 }
