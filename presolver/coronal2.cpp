@@ -20,7 +20,7 @@
  ****************************************************************************/
 // If TRACE is defined the search tree expansion is traced to std::cerr.
 // #undef TRACE
-//#define TRACE
+// #define TRACE
 
 #include <cassert>
 #include <cstdint>
@@ -113,7 +113,6 @@ class Explorer : public Action {
 
     private:
         static uint64_t countCompletions(uint64_t bv, uint64_t bh, uint64_t bu, uint64_t bd) {
-
             // Placement Complete?
             if (bh + 1 == 0)
                 return 1;
@@ -146,7 +145,7 @@ std::ostream &operator<<(std::ostream &out, Action const &act) {
 
 /**
  * @brief Run preplacer from q27 project
- * @param N boarsize
+ * @param N boardsize
  * @param count_solutions if true evaluate and count all computed preplacements
  */
 void preplace(unsigned N, bool count_solutions) {
@@ -169,7 +168,7 @@ void preplace(unsigned N, bool count_solutions) {
         unsigned idx = 0;
         for (unsigned a = 0; a < N; a++) {
             for (unsigned b = 0; b < N; b++) {
-                if (abs(a - b) <= 1)
+                if (abs(static_cast<signed>(a) - static_cast<signed>(b)) <= 1)
                     continue;
                 pres[idx].a = a;
                 pres[idx].b = b;
