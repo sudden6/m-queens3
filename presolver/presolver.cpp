@@ -84,7 +84,7 @@ int main(int argc, char *argv[]) {
         size_t const total = none + point + rotate;
 
         // Board object does dynamic memory allocation
-        size_t const board_obj_size = sizeof(queens::Board) + boardsize * sizeof(signed);
+        size_t const board_obj_size = sizeof(queens::Board) + boardsize * sizeof(int8_t);
 
         std::cout << "NONE  : " << std::to_string(none) << std::endl;
         std::cout << "POINT : " << std::to_string(point) << std::endl;

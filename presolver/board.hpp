@@ -28,10 +28,10 @@
 namespace queens {
 class Board {
     public:
-        unsigned const N;
+        uint8_t const N;
 
     private:
-        signed *const board;
+        int8_t *const board;
 
         uint64_t bv;
         uint64_t bh;
@@ -39,36 +39,36 @@ class Board {
         uint64_t bd;
 
     public:
-        Board(unsigned const dim) : N(dim), board(new signed[N]), bv(0), bh(0), bu(0), bd(0) {
-            for (unsigned i = 0; i < N; i++) {
+        Board(unsigned const dim) : N(dim), board(new int8_t[N]), bv(0), bh(0), bu(0), bd(0) {
+            for (uint8_t i = 0; i < N; i++) {
                 board[i] = -1;
             }
         }
         ~Board() { delete[] board; }
         Board(Board const &other)
-            : N(other.N), board(new signed[N]), bv(other.bv), bh(other.bh), bu(other.bu), bd(other.bd) {
-            for (unsigned i = 0; i < N; i++) {
+            : N(other.N), board(new int8_t[N]), bv(other.bv), bh(other.bh), bu(other.bu), bd(other.bd) {
+            for (uint8_t i = 0; i < N; i++) {
                 board[i] = other.board[i];
             }
         }
 
     private:
         class Cell {
-                signed &col;
+                int8_t &col;
                 unsigned const y;
 
             public:
-                Cell(signed &_col, unsigned const _y) : col(_col), y(_y) {}
+                Cell(int8_t &_col, unsigned const _y) : col(_col), y(_y) {}
                 ~Cell() {}
 
             public:
-                operator bool() const { return col == (signed)y; }
+                operator bool() const { return col == (int8_t)y; }
                 Cell &operator=(bool const v) {
                     if (v) {
                         assert(col == -1);
-                        col = (signed)y;
+                        col = (int8_t)y;
                     } else {
-                        assert(col == (signed)y);
+                        assert(col == (int8_t)y);
                         col = -1;
                     }
                     return *this;
@@ -76,7 +76,7 @@ class Board {
         }; // class Cell
 
     public:
-        bool operator()(unsigned x, unsigned y) const { return board[x] == (signed)y; }
+        bool operator()(unsigned x, unsigned y) const { return board[x] == (int8_t)y; }
 
     private:
         Cell operator()(unsigned x, unsigned y) { return Cell(board[x], y); }
@@ -145,16 +145,16 @@ class Board {
         uint64_t getBU() const { return bu; }
         uint64_t getBD() const { return bd; }
 
-        unsigned coronal(int8_t *buf, unsigned rings) const {
+        unsigned coronal(int8_t *buf, uint8_t rings) const {
             if (rings > N)
                 rings = N;
 
-            for (unsigned x = 0; x < rings; x++) {
+            for (uint8_t x = 0; x < rings; x++) {
                 *buf++ = board[x];
             }
-            for (unsigned y = N; y-- > N - rings;) {
+            for (uint8_t y = N; y-- > N - rings;) {
                 *buf = -1;
-                for (unsigned x = 0; x < N; x++) {
+                for (uint8_t x = 0; x < N; x++) {
                     if (operator()(x, y)) {
                         *buf = x;
                         break;
@@ -162,12 +162,12 @@ class Board {
                 }
                 buf++;
             }
-            for (unsigned x = N; x-- > N - rings;) {
+            for (uint8_t x = N; x-- > N - rings;) {
                 *buf++ = N - 1 - board[x];
             }
-            for (unsigned y = 0; y < rings; y++) {
+            for (uint8_t y = 0; y < rings; y++) {
                 *buf = -1;
-                for (unsigned x = 0; x < N; x++) {
+                for (uint8_t x = 0; x < N; x++) {
                     if (operator()(x, y)) {
                         *buf = N - 1 - x;
                         break;
@@ -182,9 +182,9 @@ class Board {
 }; // class Board
 
 inline std::ostream &operator<<(std::ostream &out, Board const &brd) {
-    unsigned const N = brd.N;
-    for (unsigned y = N; y-- > 0;) {
-        for (unsigned x = 0; x < N; x++) {
+    uint8_t const N = brd.N;
+    for (uint8_t y = N; y-- > 0;) {
+        for (uint8_t x = 0; x < N; x++) {
             out << (brd(x, y) ? 'Q' : '.');
         }
         out << std::endl;
