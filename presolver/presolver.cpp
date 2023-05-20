@@ -7,6 +7,7 @@
 #include "board.hpp"
 #include "coronal2.hpp"
 #include "cpu_solver_recursive.hpp"
+#include "mini_board.hpp"
 #include "symmetry.hpp"
 
 // expected results from https://oeis.org/A000170
@@ -71,10 +72,10 @@ int main(int argc, char *argv[]) {
 
     auto time_start = std::chrono::high_resolution_clock::now();
 
-    std::array<std::vector<queens::Board>, queens::ALL_SYMMETRIES.size()> preplacements;
+    std::array<std::vector<queens::mini_board>, queens::ALL_SYMMETRIES.size()> preplacements;
 
     auto storer = [&](queens::Board const &brd, queens::Symmetry::Direction sym) {
-        preplacements[queens::Symmetry{sym}].emplace_back(brd);
+        preplacements[queens::Symmetry{sym}].emplace_back(queens::mini_board(brd));
     };
 
     preplace(boardsize, storer);
@@ -89,8 +90,7 @@ int main(int argc, char *argv[]) {
         size_t const rotate = preplacements[queens::Symmetry(queens::Symmetry::Direction::ROTATE)].size();
         size_t const total = none + point + rotate;
 
-        // Board object does dynamic memory allocation
-        size_t const board_obj_size = sizeof(queens::Board) + boardsize * sizeof(int8_t);
+        size_t const board_obj_size = sizeof(queens::mini_board);
 
         std::cout << "NONE  : " << std::to_string(none) << std::endl;
         std::cout << "POINT : " << std::to_string(point) << std::endl;
@@ -112,8 +112,8 @@ int main(int argc, char *argv[]) {
     for (queens::Symmetry const &sym : queens::ALL_SYMMETRIES) {
         uint64_t l_counts = 0;
 #pragma omp parallel for reduction(+ : l_counts) schedule(dynamic)
-        for (queens::Board const &brd : preplacements[sym]) {
-            l_counts += queens::countCompletions(brd);
+        for (queens::mini_board const &brd : preplacements[sym]) {
+            l_counts += queens::countCompletions(brd, boardsize);
         }
         counts[sym] = l_counts;
     }
