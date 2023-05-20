@@ -2,16 +2,19 @@
 
 #include "board.hpp"
 
-#include <array>
-#include <vector>
 #include "symmetry.hpp"
+#include <array>
+#include <functional>
+#include <vector>
 
-// Index is the queens::Symmetry::Direction
-using Preplacements = std::array<std::vector<queens::Board>, queens::ALL_SYMMETRIES.size()>;
+/**
+ * Callback for the result of the preplacer, first parameter is the preplaced Board, second the direction of symmetry.
+ */
+using PreplaceCallback = void(queens::Board const &, queens::Symmetry::Direction);
 
 /**
  * @brief Run preplacer from q27 project
  * @param N boardsize
- * @param count_solutions if true evaluate and count all computed preplacements
+ * @param callback Callback to further handle each computed preplacement
  */
-Preplacements preplace(unsigned N);
+void preplace(unsigned N, std::function<PreplaceCallback> callback);

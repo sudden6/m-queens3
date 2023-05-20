@@ -1,7 +1,6 @@
 #pragma once
 
 #include <array>
-#include <cassert>
 
 namespace queens {
 class Symmetry {
@@ -28,7 +27,6 @@ class Symmetry {
         unsigned weight() const { return 1 << (static_cast<unsigned>(m_val) + 1); }
 };
 
-static const std::array<Symmetry, 3> ALL_SYMMETRIES{Symmetry{Symmetry::Direction::NONE},
-                                                    Symmetry{Symmetry::Direction::POINT},
-                                                                                                    Symmetry{Symmetry::Direction::ROTATE}};
+static const std::array<Symmetry, 3> ALL_SYMMETRIES{
+    Symmetry{Symmetry::Direction::NONE}, Symmetry{Symmetry::Direction::POINT}, Symmetry{Symmetry::Direction::ROTATE}};
 } // namespace queens

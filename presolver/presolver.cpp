@@ -71,7 +71,13 @@ int main(int argc, char *argv[]) {
 
     auto time_start = std::chrono::high_resolution_clock::now();
 
-    auto preplacements = preplace(boardsize);
+    std::array<std::vector<queens::Board>, queens::ALL_SYMMETRIES.size()> preplacements;
+
+    auto storer = [&](queens::Board const &brd, queens::Symmetry::Direction sym) {
+        preplacements[queens::Symmetry{sym}].emplace_back(brd);
+    };
+
+    preplace(boardsize, storer);
 
     auto time_end = std::chrono::high_resolution_clock::now();
     std::chrono::duration<double> elapsed = time_end - time_start;
@@ -91,7 +97,7 @@ int main(int argc, char *argv[]) {
         std::cout << "ROTATE: " << std::to_string(rotate) << std::endl;
         std::cout << "------" << std::endl;
         std::cout << "TOTAL : " << std::to_string(total) << std::endl;
-        std::cout << "Memory: " << std::to_string(total*board_obj_size) << std::endl;
+        std::cout << "Memory: " << std::to_string(total * board_obj_size) << std::endl;
         std::cout << "Time  : " << elapsed.count() << " seconds" << std::endl;
     }
 
@@ -105,7 +111,7 @@ int main(int argc, char *argv[]) {
 
     for (queens::Symmetry const &sym : queens::ALL_SYMMETRIES) {
         uint64_t l_counts = 0;
-        #pragma omp parallel for reduction(+ : l_counts) schedule(dynamic)
+#pragma omp parallel for reduction(+ : l_counts) schedule(dynamic)
         for (queens::Board const &brd : preplacements[sym]) {
             l_counts += queens::countCompletions(brd);
         }
@@ -131,7 +137,7 @@ int main(int argc, char *argv[]) {
         std::cout << "------" << std::endl;
         std::cout << "TOTAL : " << std::to_string(total) << std::endl;
         std::cout << "Time  : " << elapsed.count() << " seconds, ";
-        std::cout << "Solutions/s " << total/elapsed.count() << std::endl;
+        std::cout << "Solutions/s " << total / elapsed.count() << std::endl;
 
         std::cout << (results[boardsize - 1] == total ? "PASS" : "FAIL") << std::endl;
     }

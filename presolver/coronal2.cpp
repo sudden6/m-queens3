@@ -35,10 +35,8 @@
 
 using namespace queens;
 
-Preplacements preplace(unsigned N) {
+void preplace(unsigned N, std::function<PreplaceCallback> callback) {
     std::cout << N << "-Queens Puzzle preplacement generator\n" << std::endl;
-
-    Preplacements res{};
 
     /**
      * The number of valid pre-placements in two adjacent columns (rows) is
@@ -166,7 +164,8 @@ Preplacements preplace(unsigned N) {
                             // print('s', wa, wb, na, nb, ea, eb, sa, sb);
                             continue;
                         }
-                        res[Symmetry(Symmetry::Direction::ROTATE)].push_back(board);
+
+                        callback(board, Symmetry::Direction::ROTATE);
                         continue;
                     }
                     if (e == w) {
@@ -176,19 +175,18 @@ Preplacements preplace(unsigned N) {
                                 // print('e', wa, wb, na, nb, ea, eb, sa, sb);
                                 continue;
                             }
-                            res[Symmetry(Symmetry::Direction::POINT)].push_back(board);
+                            callback(board, Symmetry::Direction::POINT);
                             continue;
                         }
                     }
                     // n = w is okay
 
                     // print('o', wa, wb, na, nb, ea, eb, sa, sb);
-                    res[Symmetry(Symmetry::Direction::NONE)].push_back(board);
+                    callback(board, Symmetry::Direction::NONE);
                 } // s
             }     // e
         }         // n
     }             // w
 
     std::cout << std::endl;
-    return res;
 }
