@@ -29,15 +29,15 @@ static uint64_t countCompletions(uint64_t bv, uint64_t bh, uint64_t bu, uint64_t
 
 } // countCompletions()
 
-static uint64_t countCompletions(Board const &brd) {
-    unsigned const N = brd.N;
-    return countCompletions(brd.getBV() >> 2, ((((brd.getBH() >> 2) | (~0 << (N - 4))) + 1) << (N - 5)) - 1,
-                            brd.getBU() >> 4, (brd.getBD() >> 4) << (N - 5));
-}
-
 static uint64_t countCompletions(queens::mini_board const &brd, uint8_t n) {
     unsigned const N = n;
     return countCompletions(brd.getBV() >> 2, ((((brd.getBH() >> 2) | (~0 << (N - 4))) + 1) << (N - 5)) - 1,
                             brd.getBU() >> 4, (brd.getBD() >> 4) << (N - 5));
 }
+
+static uint64_t countCompletions(Board const &brd) {
+    return countCompletions(queens::mini_board(brd), brd.N);
+}
+
+
 }; // namespace queens
