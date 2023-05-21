@@ -29,6 +29,7 @@ namespace queens {
 class Board {
     public:
         uint8_t const N;
+        uint8_t placed;
 
     private:
         int8_t *const board;
@@ -39,14 +40,15 @@ class Board {
         uint64_t bd;
 
     public:
-        Board(unsigned const dim) : N(dim), board(new int8_t[N]), bv(0), bh(0), bu(0), bd(0) {
+        Board(unsigned const dim) : N(dim), placed(0), board(new int8_t[N]), bv(0), bh(0), bu(0), bd(0) {
             for (uint8_t i = 0; i < N; i++) {
                 board[i] = -1;
             }
         }
         ~Board() { delete[] board; }
         Board(Board const &other)
-            : N(other.N), board(new int8_t[N]), bv(other.bv), bh(other.bh), bu(other.bu), bd(other.bd) {
+            : N(other.N), placed(other.placed), board(new int8_t[N]), bv(other.bv), bh(other.bh), bu(other.bu),
+              bd(other.bd) {
             for (uint8_t i = 0; i < N; i++) {
                 board[i] = other.board[i];
             }
@@ -118,6 +120,7 @@ class Board {
                     parent.bh |= bh;
                     parent.bu |= bu;
                     parent.bd |= bd;
+                    parent.placed += 1;
                     valid = true;
                     owner = true;
                 }
@@ -129,6 +132,7 @@ class Board {
                         parent.bh ^= UINT64_C(1) << y;
                         parent.bu ^= UINT64_C(1) << (parent.N - 1 - x + y);
                         parent.bd ^= UINT64_C(1) << (x + y);
+                        parent.placed -= 1;
                         parent(x, y) = false;
                     }
                 }
@@ -144,6 +148,7 @@ class Board {
         uint64_t getBH() const { return bh; }
         uint64_t getBU() const { return bu; }
         uint64_t getBD() const { return bd; }
+        uint8_t getPlaced() const { return placed; }
 
         unsigned coronal(int8_t *buf, uint8_t rings) const {
             if (rings > N)
