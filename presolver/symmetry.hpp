@@ -3,6 +3,10 @@
 #include <array>
 
 namespace queens {
+
+/**
+ * @brief This class describes symmetries and their weights when counting results.
+ */
 class Symmetry {
     private:
         static constexpr std::array NAMES = {"ROTATE", "POINT", "NONE"};
