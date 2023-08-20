@@ -76,8 +76,16 @@ int main(int argc, char *argv[]) {
 
     std::array<std::vector<queens::mini_board>, queens::ALL_SYMMETRIES.size()> preplacements;
 
+    // Histogram over the number of queens placed per preplacement
+    std::array<uint64_t, 8> placed_cnt_histogram{};
+
     auto storer = [&](queens::Board const &brd, queens::Symmetry::Direction sym) {
         preplacements[queens::Symmetry{sym}].emplace_back(queens::mini_board(brd));
+        if (brd.getPlaced() > placed_cnt_histogram.size()) {
+            std::cout << "Error, out of range: " << std::to_string(brd.getPlaced()) << std::endl;
+        } else {
+            placed_cnt_histogram[brd.getPlaced()]++;
+        }
     };
 
     preplace(boardsize, storer);
@@ -101,6 +109,11 @@ int main(int argc, char *argv[]) {
         std::cout << "TOTAL : " << std::to_string(total) << std::endl;
         std::cout << "Memory: " << std::to_string(total * board_obj_size) << std::endl;
         std::cout << "Time  : " << elapsed.count() << " seconds" << std::endl;
+        std::cout << "Preplaced counts: " << std::endl;
+        for (size_t i = 0; i < placed_cnt_histogram.size(); i++) {
+            std::cout << " [" << std::to_string(i) << "] = " << std::to_string(placed_cnt_histogram[i]) << std::endl;
+        }
+
     }
 
     std::cout << std::endl;
