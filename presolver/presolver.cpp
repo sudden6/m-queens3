@@ -12,12 +12,12 @@
 
 // expected results from https://oeis.org/A000170
 static constexpr uint64_t results[27] = {
-    1ULL,
-    0ULL,
-    0ULL,
-    2ULL,
-    10ULL,
-    4ULL,
+    1ULL,   // N=1
+    0ULL,   // N=2
+    0ULL,   // N=3
+    2ULL,   // N=4
+    10ULL,  // N=5
+    4ULL,   // N=6
     40ULL,
     92ULL,
     352ULL,
@@ -80,11 +80,11 @@ int main(int argc, char *argv[]) {
     std::array<uint64_t, 8> placed_cnt_histogram{};
 
     auto storer = [&](queens::Board const &brd, queens::Symmetry::Direction sym) {
-        preplacements[queens::Symmetry{sym}].emplace_back(queens::mini_board(brd));
+        preplacements[queens::Symmetry{sym}].push_back(brd);
         if (brd.getPlaced() > placed_cnt_histogram.size()) {
             std::cout << "Error, out of range: " << std::to_string(brd.getPlaced()) << std::endl;
         } else {
-            placed_cnt_histogram[brd.getPlaced()]++;
+            placed_cnt_histogram[brd.getPlaced() - 1]++;
         }
     };
 
@@ -111,7 +111,7 @@ int main(int argc, char *argv[]) {
         std::cout << "Time  : " << elapsed.count() << " seconds" << std::endl;
         std::cout << "Preplaced counts: " << std::endl;
         for (size_t i = 0; i < placed_cnt_histogram.size(); i++) {
-            std::cout << " [" << std::to_string(i) << "] = " << std::to_string(placed_cnt_histogram[i]) << std::endl;
+            std::cout << " [" << std::to_string(i + 1) << "] = " << std::to_string(placed_cnt_histogram[i]) << std::endl;
         }
 
     }
